@@ -1,0 +1,7 @@
+{
+  "name": "snapic",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
