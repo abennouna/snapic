@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">snapic</string>
+    <string name="title_activity_main">snapic</string>
+    <string name="package_name">com.tellibus.hem.snapic</string>
+    <string name="custom_url_scheme">com.tellibus.hem.snapic</string>
+</resources>

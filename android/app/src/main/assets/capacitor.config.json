@@ -1,0 +1,8 @@
+{
+  "appId": "com.tellibus.hem.snapic",
+  "appName": "snapic",
+  "bundledWebRuntime": false,
+  "npmClient": "npm",
+  "webDir": "www",
+  "cordova": {}
+}
