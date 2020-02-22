@@ -176,6 +176,10 @@
   }
 }
 
+body.has-camera-preview {
+  --ion-background-color: transparent;
+}
+
 #video.camera-preview {
   object-fit: cover !important;
   height: 100% !important;

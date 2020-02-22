@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Renderer2 } from '@angular/core';
 import { CameraPhoto, Capacitor, Plugins } from '@capacitor/core';
 import { NavController } from '@ionic/angular';
 import { EmoticonService } from '../../services/emoticon/emoticon.service';
@@ -22,12 +22,14 @@ export class SnapPage {
     private navController: NavController,
     public pictureOverlayService: PictureOverlayService,
     public photoService: PhotoService,
+    public renderer: Renderer2,
   ) {}
 
   /**
    * @inheritdoc
    */
   private ionViewWillEnter() {
+    this.renderer.addClass(document.body, 'has-camera-preview');
     this.emoticonService.reset();
     this.startPreview();
   }
@@ -36,6 +38,8 @@ export class SnapPage {
    * @inheritdoc
    */
   private ionViewWillLeave() {
+    this.renderer.removeClass(document.body, 'has-camera-preview');
+
     if (CameraPreview.loaded) {
       CameraPreview.stop();
     }
