@@ -6,7 +6,12 @@ const routes: Routes = [
   {
     path: 'home',
     loadChildren: () =>
-      import('./home/home.module').then(m => m.HomePageModule),
+      import('./pages/home/home.module').then(m => m.HomePageModule),
+  },
+  {
+    path: 'snap',
+    loadChildren: () =>
+      import('./pages/snap/snap.module').then(m => m.SnapPageModule),
   },
 ];
 

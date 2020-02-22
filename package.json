@@ -29,6 +29,8 @@
     "@capacitor/core": "1.5.0",
     "@capacitor/ios": "^1.5.0",
     "@ionic/angular": "^5.0.0",
+    "@ionic/pwa-elements": "^1.4.2",
+    "capacitor-camera-preview": "^0.4.0",
     "core-js": "^3.6.4",
     "rxjs": "^6.5.4",
     "tslib": "^1.10.0",

@@ -1,0 +1,50 @@
+<ion-content [fullscreen]="true">
+  <div id="cameraPreviewContainer">
+    <ion-fab class="ion-margin-top" horizontal="start" vertical="top">
+      <ion-fab-button color="light" size="small" (click)="flipCamera()" *ngIf="isDevice">
+        <ion-icon name="repeat-sharp"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
+
+    <ion-fab class="ion-margin-top" horizontal="end" vertical="top">
+      <ion-fab-button color="danger" size="small" (click)="cancelPreview()">
+        <ion-icon name="close"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
+
+    <!-- video will go here -->
+  </div>
+
+  <div id="iconsOverlay">
+    <ion-icon id="emoticon-{{ iconIndex }}" [name]="icon.name" [style.color]="icon.color"
+      [style.font-size]="icon.fontSize" [style.left]="icon.left" [style.transform]="icon.rotate" [style.top]="icon.top"
+      *ngFor="let icon of emoticonService.emoticons; index as iconIndex"></ion-icon>
+
+    <ion-icon id="food-{{ iconIndex }}" [name]="icon.name" [style.color]="icon.color" [style.font-size]="icon.fontSize"
+      [style.left]="icon.left" [style.transform]="icon.rotate" [style.top]="icon.top"
+      *ngFor="let icon of emoticonService.foods; index as iconIndex"></ion-icon>
+  </div>
+
+  <div id="pictureOverlay" *ngIf="pictureOverlayService.selectedOverlay">
+    <ion-img id="selectedOverlay" [src]="pictureOverlayService.selectedOverlay.filename">
+    </ion-img>
+  </div>
+
+  <ion-fab horizontal="start" vertical="bottom">
+    <ion-fab-button color="light" size="small" (click)="pictureOverlayService.addEyeglass()">
+      <ion-icon name="glasses"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <ion-fab horizontal="center" vertical="bottom">
+    <ion-fab-button (click)="takePicture()">
+      <ion-icon name="camera"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <ion-fab horizontal="end" vertical="bottom">
+    <ion-fab-button color="light" size="small" (click)="pictureOverlayService.addFunnyFace()">
+      <ion-icon name="happy"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

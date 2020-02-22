@@ -1,0 +1,32 @@
+html,
+body,
+.ion-app,
+.ion-content {
+  background-color: transparent;
+}
+
+#cameraPreviewContainer,
+#iconsOverlay,
+#pictureOverlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+}
+
+#iconsOverlay {
+  overflow: hidden;
+
+  ion-icon {
+    position: absolute;
+    z-index: 1;
+  }
+}
+
+#pictureOverlay {
+  ion-img {
+    margin: 100px auto;
+    width: 200px;
+  }
+}

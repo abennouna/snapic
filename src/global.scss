@@ -175,3 +175,9 @@
     --color: white;
   }
 }
+
+#video.camera-preview {
+  object-fit: cover !important;
+  height: 100% !important;
+  width: 100% !important;
+}
