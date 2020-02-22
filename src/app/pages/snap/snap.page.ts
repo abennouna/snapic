@@ -31,6 +31,7 @@ export class SnapPage {
   private ionViewWillEnter() {
     this.renderer.addClass(document.body, 'has-camera-preview');
     this.emoticonService.reset();
+    this.pictureOverlayService.reset();
     this.startPreview();
   }
 
