@@ -71,142 +71,230 @@ export class SnapPage {
   }
 
   /**
+   * https://jsfiddle.net/yhzuet8L/1/
+   *
+   * @param  {string} base64data
+   * @param  {{degrees:number;enableURI:boolean;height?:number;width?:number;}} options
+   * @returns Promise<{ date: string; dimensions: { height: number, width: number } }>
+   */
+  private rotate64(
+    base64data: string,
+    options: {
+      degrees: number;
+      enableURI: boolean;
+      height?: number;
+      width?: number;
+    } = { degrees: 90, enableURI: true },
+  ): Promise<{ data: string; dimensions: { height: number; width: number } }> {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      canvas.style.display = 'none';
+      document.body.appendChild(canvas);
+
+      const ctx = canvas.getContext('2d');
+
+      const image = new Image();
+
+      image.onload = () => {
+        const w = image.width;
+        const h = image.height;
+        const rads = (options.degrees * Math.PI) / 180;
+
+        let c = Math.cos(rads);
+        if (c < 0) {
+          c = -c;
+        }
+        let s = Math.sin(rads);
+        if (s < 0) {
+          s = -s;
+        }
+
+        //use translated width and height for new canvas
+        canvas.width = h * s + w * c;
+        canvas.height = h * c + w * s;
+
+        //draw the rect in the center of the newly sized canvas
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate((options.degrees * Math.PI) / 180);
+        ctx.drawImage(image, -w / 2, -h / 2);
+
+        //assume plain base64 if not provided
+        resolve({
+          data: options.enableURI
+            ? canvas.toDataURL()
+            : canvas.toDataURL().split(',')[1],
+          dimensions: { height: canvas.height, width: canvas.width },
+        });
+
+        document.body.removeChild(canvas);
+      };
+
+      image.onerror = () => {
+        reject('Unable to rotate data\n' + image.src);
+      };
+
+      //assume png if not provided
+      image.src =
+        (base64data.indexOf(',') == -1 ? 'data:image/png;base64,' : '') +
+        base64data;
+    });
+  }
+
+  /**
    *
    */
   public async takePicture() {
     const result = await CameraPreview.capture();
-    const iconsOverlay = document.getElementById('iconsOverlay');
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    canvas.width = iconsOverlay.offsetWidth;
-    canvas.height = iconsOverlay.offsetHeight;
 
-    // Redraw captured camera preview
+    // Redraw captured camera preview, rotated if necessary
     const background = new Image();
-    background.src = `data:image/png;base64,${result.value}`;
-    background.onload = async () => {
-      context.drawImage(
-        background,
-        0,
-        0,
-        iconsOverlay.offsetWidth,
-        iconsOverlay.offsetHeight,
-      );
+    new Promise(resolve => {
+      this.rotate64(result.value, {
+        degrees: this.isDevice ? 90 : 0,
+        enableURI: true,
+      }).then(result => {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.height = result.dimensions.height;
+        canvas.width = result.dimensions.width;
 
-      const emoticonPromises: Promise<
-        void
-      >[] = this.emoticonService.emoticons.map((icon, index) => {
-        return new Promise(resolve => {
-          const overlayIcon = new Image();
-          const overlayIconElement = document.getElementById(
-            `emoticon-${index}`,
-          );
+        background.src = result.data;
 
-          const path = overlayIconElement.shadowRoot.firstElementChild.firstElementChild.innerHTML
-            .replace('<path d="', '')
-            .replace('"></path>"', '');
+        background.onload = async () => {
+          context.drawImage(background, 0, 0, canvas.width, canvas.height);
 
-          overlayIcon.onload = async () => {
-            context.fillStyle = icon.color;
-            // context.font = `${icon.fontSize} sans-serif`;
-            context.rotate(
-              (Math.PI * parseInt(icon.rotate.replace(/[a-zA-Z \(\)]/g, ''))) /
-                180,
-            );
-
-            var p = new Path2D(path);
-            p.moveTo(
-              parseInt(icon.left.replace(/[a-zA-Z ]/g, '')),
-              parseInt(icon.top.replace(/[a-zA-Z ]/g, '')),
-            );
-            context.fill(p);
-            // context.drawImage(
-            //   overlayIcon,
-            //   parseInt(icon.left.replace(/[a-zA-Z ]/g, '')),
-            //   parseInt(icon.top.replace(/[a-zA-Z ]/g, '')),
-            //   overlayIconElement.offsetWidth,
-            //   overlayIconElement.offsetHeight
-            // );
-
-            resolve();
-          };
-
-          overlayIcon.src = icon.filename;
-        });
-      });
-
-      const pictureOverlayPromises: Promise<void>[] = [
-        new Promise(resolve => {
-          const pictureOverlay = new Image();
-          const selectedOverlayElement = document.getElementById(
-            'selectedOverlay',
-          );
-
-          pictureOverlay.onload = async () => {
-            context.drawImage(
-              pictureOverlay,
-              selectedOverlayElement.offsetLeft,
-              selectedOverlayElement.offsetTop,
-              selectedOverlayElement.offsetWidth,
-              selectedOverlayElement.offsetHeight,
-            );
-
-            resolve();
-          };
-
-          pictureOverlay.src = this.pictureOverlayService.selectedOverlay.filename;
-        }),
-      ];
-
-      const foodPromises: Promise<void>[] = this.emoticonService.foods.map(
-        (icon, index) => {
-          return new Promise(resolve => {
-            const overlayIcon = new Image();
-            const overlayIconElement = document.getElementById(`food-${index}`);
-
-            overlayIcon.onload = async () => {
-              // set composite mode
-              context.fillStyle = icon.color;
-              context.strokeStyle = icon.color;
-              context.font = `${icon.fontSize} sans-serif`;
-              context.rotate(
-                (Math.PI *
-                  parseInt(icon.rotate.replace(/[a-zA-Z \(\)]/g, ''))) /
-                  180,
+          const pictureOverlayPromises: Promise<void>[] = [
+            new Promise(resolve => {
+              const pictureOverlayElement = document.getElementById(
+                'pictureOverlay',
+              );
+              const selectedOverlayElement = document.getElementById(
+                'selectedOverlay',
               );
 
-              context.drawImage(
-                overlayIcon,
-                parseInt(icon.left.replace(/[a-zA-Z ]/g, '')),
-                parseInt(icon.top.replace(/[a-zA-Z ]/g, '')),
-                overlayIconElement.offsetWidth,
-                overlayIconElement.offsetHeight,
+              if (selectedOverlayElement) {
+                const cameraPreviewContainer = new Image();
+
+                cameraPreviewContainer.onload = async () => {
+                  context.drawImage(
+                    cameraPreviewContainer,
+                    (selectedOverlayElement.offsetLeft * canvas.width) /
+                      pictureOverlayElement.offsetWidth,
+                    (selectedOverlayElement.offsetTop * canvas.height) /
+                      pictureOverlayElement.offsetHeight,
+                    (selectedOverlayElement.offsetWidth * canvas.width) /
+                      pictureOverlayElement.offsetWidth,
+                    (selectedOverlayElement.offsetHeight * canvas.height) /
+                      pictureOverlayElement.offsetHeight,
+                  );
+                  resolve();
+                };
+
+                cameraPreviewContainer.src = this.pictureOverlayService.selectedOverlay.filename;
+              } else {
+                resolve();
+              }
+            }),
+          ];
+
+          const emoticonPromises: Promise<
+            void
+          >[] = this.emoticonService.emoticons.map((icon, index) => {
+            return new Promise(resolve => {
+              const overlayIcon = new Image();
+              const overlayIconElement = document.getElementById(
+                `emoticon-${index}`,
               );
 
-              resolve();
+              const path = overlayIconElement.shadowRoot.firstElementChild.firstElementChild.innerHTML
+                .replace('<path d="', '')
+                .replace('"></path>"', '');
+
+              overlayIcon.onload = async () => {
+                context.fillStyle = icon.color;
+                // context.font = `${icon.fontSize} sans-serif`;
+                context.rotate(
+                  (Math.PI *
+                    parseInt(icon.rotate.replace(/[a-zA-Z \(\)]/g, ''))) /
+                    180,
+                );
+
+                const p = new Path2D(path);
+                p.moveTo(
+                  parseInt(icon.left.replace(/[a-zA-Z ]/g, '')),
+                  parseInt(icon.top.replace(/[a-zA-Z ]/g, '')),
+                );
+                context.fill(p);
+                // context.drawImage(
+                //   overlayIcon,
+                //   parseInt(icon.left.replace(/[a-zA-Z ]/g, '')),
+                //   parseInt(icon.top.replace(/[a-zA-Z ]/g, '')),
+                //   overlayIconElement.offsetWidth,
+                //   overlayIconElement.offsetHeight
+                // );
+
+                resolve();
+              };
+
+              overlayIcon.src = icon.filename;
+            });
+          });
+
+          const foodPromises: Promise<void>[] = this.emoticonService.foods.map(
+            (icon, index) => {
+              return new Promise(resolve => {
+                const overlayIcon = new Image();
+                const overlayIconElement = document.getElementById(
+                  `food-${index}`,
+                );
+
+                overlayIcon.onload = async () => {
+                  // set composite mode
+                  context.fillStyle = icon.color;
+                  context.strokeStyle = icon.color;
+                  context.font = `${icon.fontSize} sans-serif`;
+                  context.rotate(
+                    (Math.PI *
+                      parseInt(icon.rotate.replace(/[a-zA-Z \(\)]/g, ''))) /
+                      180,
+                  );
+
+                  context.drawImage(
+                    overlayIcon,
+                    parseInt(icon.left.replace(/[a-zA-Z ]/g, '')),
+                    parseInt(icon.top.replace(/[a-zA-Z ]/g, '')),
+                    overlayIconElement.offsetWidth,
+                    overlayIconElement.offsetHeight,
+                  );
+
+                  resolve();
+                };
+
+                overlayIcon.src = icon.filename;
+              });
+            },
+          );
+
+          Promise.all(
+            emoticonPromises
+              .concat(foodPromises)
+              .concat(pictureOverlayPromises),
+          ).then(async () => {
+            const photo: CameraPhoto = {
+              base64String: canvas
+                .toDataURL('image/png')
+                .replace('data:image/png;base64,', ''),
+              format: 'jpeg',
             };
 
-            overlayIcon.src = icon.filename;
+            await this.photoService.addNewToGallery(photo);
+
+            this.navController.navigateBack(['/home']);
+
+            CameraPreview.stop();
           });
-        },
-      );
-
-      Promise.all(
-        emoticonPromises.concat(foodPromises).concat(pictureOverlayPromises),
-      ).then(async () => {
-        const photo: CameraPhoto = {
-          base64String: canvas
-            .toDataURL('image/png')
-            .replace('data:image/png;base64,', ''),
-          format: 'jpeg',
         };
-
-        await this.photoService.addNewToGallery(photo);
-
-        this.navController.navigateBack(['/home']);
-
-        CameraPreview.stop();
       });
-    };
+    });
   }
 }
