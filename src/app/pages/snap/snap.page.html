@@ -36,15 +36,27 @@
     </ion-fab-button>
   </ion-fab>
 
+  <ion-fab class="ion-margin-start" horizontal="start" vertical="bottom">
+    <ion-fab-button color="light" size="small" (click)="pictureOverlayService.addHat()">
+      <ion-icon src="/assets/icons/hat.svg"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
   <ion-fab horizontal="center" vertical="bottom">
     <ion-fab-button (click)="takePicture()">
       <ion-icon name="camera"></ion-icon>
     </ion-fab-button>
   </ion-fab>
 
+  <ion-fab class="ion-margin-end" horizontal="end" vertical="bottom">
+    <ion-fab-button color="light" size="small" (click)="pictureOverlayService.addMask()">
+      <ion-icon src="/assets/icons/mask.svg"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
   <ion-fab horizontal="end" vertical="bottom">
     <ion-fab-button color="light" size="small" (click)="pictureOverlayService.addFunnyFace()">
-      <ion-icon name="happy"></ion-icon>
+      <ion-icon src="/assets/icons/funny-face.svg"></ion-icon>
     </ion-fab-button>
   </ion-fab>
 </ion-content>

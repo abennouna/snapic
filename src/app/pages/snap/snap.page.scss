@@ -27,3 +27,11 @@ ion-content {
     width: 200px;
   }
 }
+
+ion-fab {
+  &.fab-vertical-bottom {
+    + .fab-vertical-bottom {
+      --ion-margin: 56px;
+    }
+  }
+}
